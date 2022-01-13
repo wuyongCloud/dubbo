@@ -228,6 +228,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (this.shouldExport()) {
                 this.init();
 
+                // 是否延迟暴露，spring 容器完全初始化
                 if (shouldDelay()) {
                     doDelayExport();
                 } else {
@@ -366,6 +367,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        // 封装当前要注册的服务 为 ServiceDescriptor，这里有详细的service 和method 元数据信息
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
@@ -538,13 +540,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
         }
-
+        // 查询当前的host
         // export service
         String host = findConfiguredHosts(protocolConfig, provider, params);
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 
-        // You can customize Configurator to append extra parameters
+        // You can customize Configurator to append extra parameters 自定义配置，append上自定义参数
         if (this.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             url = this.getExtensionLoader(ConfiguratorFactory.class)
@@ -559,12 +561,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
-
+            // 如果非remote配置，就上报到本地
             // export to local if the config is not remote (export to remote only when config is remote)
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
-
+            // 如果非本地，就上报到远程
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
@@ -585,7 +587,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
                     url = url.addParameterIfAbsent(SERVICE_NAME_MAPPING_KEY, "true");
                 }
-
+                // 如果只是jvm层面的通信，无需注册，直接结束
                 //if protocol is only injvm ,not register
                 if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
                     continue;
@@ -629,10 +631,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrl(URL url, boolean withMetaData) {
+        //JavassistProxyFactory
+        // getInvoker 会返回一个匿名的 invoker实例，当外部调用该Invoker.invoke() 方法时，最终调用的是 Wrapper.invokeMethod 方法
         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
         if (withMetaData) {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
         }
+        //org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper.export
         Exporter<?> exporter = protocolSPI.export(invoker);
         exporters.add(exporter);
     }

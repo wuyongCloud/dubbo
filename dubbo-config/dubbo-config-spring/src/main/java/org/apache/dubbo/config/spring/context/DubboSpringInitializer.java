@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Dubbo spring initialization entry point
+ * 注入Dubbo 相关的处理对象，监听器之类的，完成后期Dubbo bean 的处理流程，是一系列核心逻辑的入口
  */
 public class DubboSpringInitializer {
 
@@ -58,7 +59,7 @@ public class DubboSpringInitializer {
 
         // find beanFactory
         ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
-
+        // 加载Dubbo 核心类的 BDF
         // init dubbo context
         initContext(context, registry, beanFactory);
     }
@@ -102,6 +103,7 @@ public class DubboSpringInitializer {
         context.setRegistry(registry);
         context.setBeanFactory(beanFactory);
 
+        // SPI 的方式配置自定义 上下文
         // customize context, you can change the bind module model via DubboSpringInitCustomizer SPI
         customize(context);
 

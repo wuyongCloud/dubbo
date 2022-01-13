@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 
 /**
  * Service repository for framework
+ * 看起来是一个方便条件查找的存储
  */
 public class FrameworkServiceRepository {
 

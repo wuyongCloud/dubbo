@@ -61,6 +61,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
     @Override
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         try {
+            // Wrapper 是要暴露接口实现的代理类，内部动态生成了一个invokeMethod方法，这个方法会调用原生的实现，（wrapper.invokeMethod 会调用目标类的实现）
             // TODO Wrapper cannot handle this scenario correctly: the classname contains '$'
             final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
             return new AbstractProxyInvoker<T>(proxy, type, url) {

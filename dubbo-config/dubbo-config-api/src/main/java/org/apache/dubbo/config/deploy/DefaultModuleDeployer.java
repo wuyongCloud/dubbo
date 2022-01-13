@@ -138,7 +138,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             applicationDeployer.initialize();
             initialize();
 
-            // export services
+            // export services provider 注册服务
             exportServices();
 
         // prepare application instance
