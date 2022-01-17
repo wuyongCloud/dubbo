@@ -310,7 +310,7 @@ public class DubboProtocol extends AbstractProtocol {
 
             }
         }
-
+        // 调用底层netty，
         openServer(url);
         optimizeSerialization(url);
 
@@ -326,6 +326,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
+                // 双重检查锁，创建nettyServer,创建成功并放入缓存
                 synchronized (this) {
                     server = serverMap.get(key);
                     if (server == null) {

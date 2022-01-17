@@ -631,13 +631,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrl(URL url, boolean withMetaData) {
+        // proxyFactory 和protocol 会生成对应的代理类（适配器），里面会有缺省默认实现，
         //JavassistProxyFactory
-        // getInvoker 会返回一个匿名的 invoker实例，当外部调用该Invoker.invoke() 方法时，最终调用的是 Wrapper.invokeMethod 方法
+        // getInvoker 会返回一个匿名的 invoker实例，当外部调用该Invoker.invoke() 方法时，
+        // 最终调用的是 Wrapper.invokeMethod 方法
+        // ProxyFactory$Adaptive，内部实际上调用
         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
         if (withMetaData) {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
         }
-        //org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper.export
+        //Protoclo$Adaptive
+        //org.apache.dubbo.rpc.protocol.RegistryProtocol.export
         Exporter<?> exporter = protocolSPI.export(invoker);
         exporters.add(exporter);
     }

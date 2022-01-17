@@ -105,8 +105,11 @@ public class AdaptiveClassCodeGenerator {
         }
 
         StringBuilder code = new StringBuilder();
+        // 生成包名
         code.append(generatePackageInfo());
+        // 导包
         code.append(generateImports());
+        // 方法
         code.append(generateClassDeclaration());
 
         Method[] methods = type.getMethods();
@@ -176,6 +179,7 @@ public class AdaptiveClassCodeGenerator {
     private String generateMethod(Method method) {
         String methodReturnType = method.getReturnType().getCanonicalName();
         String methodName = method.getName();
+        // 生成方法
         String methodContent = generateMethodContent(method);
         String methodArgs = generateMethodArguments(method);
         String methodThrows = generateMethodThrows(method);
