@@ -59,7 +59,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
      * The time in milliseconds the retryExecutor will wait
      */
     private final int retryPeriod;
-
+    // hash轮，定时任务
     // Timer for failure retry, regular check if there is a request for failure, and if there is, an unlimited retry
     private final HashedWheelTimer retryTimer;
 
@@ -97,6 +97,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         FailedRegisteredTask newTask = new FailedRegisteredTask(url, this);
         oldOne = failedRegistered.putIfAbsent(url, newTask);
         if (oldOne == null) {
+            // 创建一个重试任务
             // never has a retry task. then start a new task for retry.
             retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
         }
@@ -190,7 +191,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedUnsubscribed;
     }
 
-
     @Override
     public void register(URL url) {
         if (!acceptable(url)) {
@@ -201,11 +201,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
+            // 发起注册请求
             // Sending a registration request to the server side
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
-
+            // 如果开启了启动检测，则直接抛出异常
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
@@ -219,7 +220,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             } else {
                 logger.error("Failed to register " + url + ", waiting for retry, cause: " + t.getMessage(), t);
             }
-
+            // 失败的时候，创建一个任务，底层基于hash轮
             // Record a failed registration request to a failed list, retry regularly
             addFailedRegistered(url);
         }

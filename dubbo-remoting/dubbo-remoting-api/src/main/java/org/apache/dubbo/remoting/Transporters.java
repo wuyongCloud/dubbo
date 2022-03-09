@@ -74,6 +74,7 @@ public class Transporters {
         return getTransporter(url).connect(url, handler);
     }
 
+    //Transporter$Adaptive
     public static Transporter getTransporter(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).getAdaptiveExtension();
     }

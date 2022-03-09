@@ -699,6 +699,7 @@ public class ExtensionLoader<T> {
         }
     }
 
+    // 自适应扩展点 获取的类都是对应的后缀 xxx$Adaptive
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         checkDestroyed();
@@ -773,7 +774,7 @@ public class ExtensionLoader<T> {
                 instance = postProcessAfterInitialization(instance, name);
             }
 
-            // 是否需要包装，
+            // 是否需要包装，protoal 这些都是灰被包装
             if (wrap) {
                 List<Class<?>> wrapperClassesList = new ArrayList<>();
                 if (cachedWrapperClasses != null) {
@@ -781,7 +782,7 @@ public class ExtensionLoader<T> {
                     wrapperClassesList.sort(WrapperComparator.COMPARATOR);
                     Collections.reverse(wrapperClassesList);
                 }
-
+                //排序，循环包装
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
                     for (Class<?> wrapperClass : wrapperClassesList) {
                         Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);

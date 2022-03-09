@@ -109,6 +109,7 @@ public class Exchangers {
     }
 
     public static Exchanger getExchanger(URL url) {
+        //HeadExchanger
         String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Exchanger.class).getExtension(type);
     }

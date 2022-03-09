@@ -26,14 +26,17 @@
 
 <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
 
-    <dubbo:registry id="demo1" address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry id="demo1" address="zookeeper://192.168.56.57:2181?registry-type=service"/>
 
 <!--    <dubbo:protocol name="dubbo" port="-1"/>-->
 <!--    <dubbo:protocol name="rest" port="-1"/>-->
 <!--    <dubbo:protocol name="tri" port="-1"/>-->
 
     <dubbo:reference id="demoService" check="false"
-                     interface="org.apache.dubbo.demo.DemoService"/>
+                     interface="org.apache.dubbo.demo.DemoService" filter="myfilter"/>
+<!--    <dubbo:consumer filter="myfilter"/>-->
+    <bean class="org.apache.dubbo.demo.consumer.MyServiceImpl" name="myService"/>
+<!--    <bean class="org.apache.dubbo.demo.filter.Myfilter" name="myfilter"></bean>-->
 
 <!--    <dubbo:reference version="1.0.0" group="greeting" id="greetingService" check="false"-->
 <!--                     interface="org.apache.dubbo.demo.GreetingService"/>-->

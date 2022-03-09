@@ -37,6 +37,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
+        // 从接受到的消息中，获取对应的处理线程池，进行任务分发
         ExecutorService executor = getSharedExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));

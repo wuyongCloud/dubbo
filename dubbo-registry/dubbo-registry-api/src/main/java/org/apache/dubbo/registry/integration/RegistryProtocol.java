@@ -146,6 +146,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //provider url <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
+    // 注入的Protocol
     protected Protocol protocol;
     protected ProxyFactory proxyFactory;
     //protected RegistryFactory registryFactory;
@@ -234,10 +235,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
-        //再次暴露Triple协议的服务
+        //再次暴露Triple协议的服务,最终底层是启动netty server
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
-        // url to registry
+        // url to registry 可以预见的就是在zookeeper建立一个节点
         final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
@@ -247,7 +248,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             register(registry, registeredProviderUrl);
         }
 
-        // register stated url on provider model
+        // register stated url on provider model 注册有状态的连接，希望请求只打到一个服务，除非这个服务挂了，再去连接另一台
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
 
@@ -388,6 +389,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @return
      */
     protected Registry getRegistry(final URL registryUrl) {
+//        RegistryFactory$Adaptive  -> ZookeeperRegistryFactory
         RegistryFactory registryFactory = ScopeModelUtil.getExtensionLoader(RegistryFactory.class, registryUrl.getScopeModel()).getAdaptiveExtension();
         return registryFactory.getRegistry(registryUrl);
     }

@@ -97,8 +97,9 @@ public class NettyServer extends AbstractServer {
     @Override
     protected void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
-
+        // 核心线程组 1个
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
+        // worke 线程组 可配置，默认是内核数+1 ，且不超过32
         workerGroup = NettyEventLoopFactory.eventLoopGroup(
                 getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
             EVENT_LOOP_WORKER_POOL_NAME);
@@ -109,16 +110,17 @@ public class NettyServer extends AbstractServer {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
 
         bootstrap.group(bossGroup, workerGroup)
-                .channel(NettyEventLoopFactory.serverSocketChannelClass())
+                .channel(NettyEventLoopFactory.serverSocketChannelClass())//优先使用netty Epoll 否则是java NIO
                 .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
-                .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
-                .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
+                .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)// 立即发送
+                .childOption(ChannelOption.SO_KEEPALIVE, keepalive)// 保持连接
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+                        // 从url中过去对应的协议类型，适配器
                         NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                             ch.pipeline().addLast("negotiation", new SslServerTlsHandler(getUrl()));

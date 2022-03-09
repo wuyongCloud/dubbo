@@ -39,6 +39,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
 
     /**
      * build consumer/provider filter chain
+     * 封装拦截器链路
      */
     @Override
     public <T> Invoker<T> buildInvokerChain(final Invoker<T> originalInvoker, String key, String group) {
